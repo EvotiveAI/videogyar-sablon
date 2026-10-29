@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tartalomgyár</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;700;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --petrol: #0f2321; --petrol-2: #22383a; --teal: #0f766e; --teal-soft: #d2efeb;
+    --lime: #a3e635; --lime-soft: #ecfccb; --muted: #5d7473; --line: #dde4df;
+    --bg: #f5f6f1; --card: #ffffff; --danger: #b42318;
+    --c-viral: #a3e635; --c-sorozat: #0f766e; --c-ugyfel: #e8833a; --c-hir: #3b82f6; --c-oktato: #8b5cf6; --c-egyeb: #94a3a3;
+    --sans: "Barlow", system-ui, -apple-system, sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--petrol); font: 500 15px/1.4 var(--sans); }
+  button, input, select { font: inherit; color: inherit; }
+  .mono { font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+
+  header { background: var(--petrol); color: #fff; padding: 14px 20px 16px; position: sticky; top: 0; z-index: 5; }
+  .top { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-weight: 900; font-size: 26px; letter-spacing: -.03em; text-transform: lowercase; }
+  header h1 span { background: var(--lime); color: var(--petrol); padding: 0 6px; }
+  .goal { display: flex; align-items: center; gap: 10px; margin-left: auto; min-width: 260px; }
+  .goal-bar { flex: 1; height: 10px; background: var(--petrol-2); border-radius: 5px; overflow: hidden; }
+  .goal-bar i { display: block; height: 100%; background: var(--lime); }
+  .goal b { font-weight: 900; font-size: 20px; }
+  .filters { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .filters select, .filters input { background: var(--petrol-2); border: 1px solid #3b5658; color: #fff; border-radius: 8px; padding: 7px 10px; }
+  .filters input { flex: 1; min-width: 160px; max-width: 340px; }
+  .filters input::placeholder { color: #a6c0c0; }
+  .counts { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+  .counts span { background: var(--petrol-2); color: #d2efeb; border-radius: 99px; padding: 3px 10px; font-size: 12px; white-space: nowrap; }
+  .counts b { color: var(--lime); }
+
+  main { padding: 16px 20px 40px; }
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(270px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+  .col { background: #eceee7; border-radius: 12px; padding: 10px; min-height: 120px; }
+  .col h2 { margin: 0 0 8px; display: flex; align-items: baseline; gap: 8px; font-size: 15px; font-weight: 900; letter-spacing: -.01em; }
+  .col h2 .n { margin-left: auto; background: var(--petrol); color: var(--lime); border-radius: 99px; padding: 1px 9px; font: 500 12px var(--mono); }
+  .col .hint { color: var(--muted); font-size: 12px; margin: -4px 0 8px; }
+  .col.human h2::before { content: "👉"; }
+  .col.done { background: var(--lime-soft); }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; grid-template-columns: 62px 1fr; gap: 10px; cursor: pointer; transition: border-color .15s, transform .15s; }
+  .card:hover { border-color: var(--teal); }
+  .card:active { transform: scale(.99); }
+  .thumb { width: 62px; aspect-ratio: 9/16; border-radius: 6px; background: var(--petrol); overflow: hidden; position: relative; display: grid; place-items: center; color: #fff; font: 900 18px var(--sans); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .t { font-weight: 700; font-size: 14px; line-height: 1.25; margin: 0 0 4px; overflow-wrap: anywhere; }
+  .chips { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .chip { font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .06em; padding: 2px 6px; border-radius: 4px; background: #eef1ec; color: var(--muted); white-space: nowrap; }
+  .chip.cat { color: #fff; }
+  .chip.cat.VIRAL { background: var(--c-viral); color: var(--petrol); }
+  .chip.cat.SOROZAT { background: var(--c-sorozat); }
+  .chip.cat.UGYFELSIKER { background: var(--c-ugyfel); }
+  .chip.cat.HIR { background: var(--c-hir); }
+  .chip.cat.OKTATO { background: var(--c-oktato); }
+  .chip.warn { background: #fff4e5; color: #9a5b00; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .acts { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; }
+  .tg { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 3px 9px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .tg:hover { border-color: var(--petrol); }
+  .tg.on { background: var(--petrol); border-color: var(--petrol); color: var(--lime); }
+  .tg.on::before { content: "✓ "; }
+  .tg[disabled] { opacity: .5; cursor: wait; }
+
+  .idea { background: #fff; border: 1px dashed #b9c7c1; border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 13px; }
+  .idea:hover { border-color: var(--teal); border-style: solid; }
+  .idea .t { font-weight: 700; font-size: 14px; line-height: 1.25; }
+  .newidea { display: flex; gap: 6px; margin-bottom: 8px; }
+  .newidea input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; background: #fff; }
+  .btn { background: var(--petrol); color: #fff; border: 0; border-radius: 8px; padding: 7px 12px; font-weight: 700; cursor: pointer; }
+  .btn.lime { background: var(--lime); color: var(--petrol); }
+  .btn:hover { filter: brightness(1.15); }
+
+  details.extra { margin-top: 16px; background: #eceee7; border-radius: 12px; padding: 10px 12px; }
+  details.extra summary { cursor: pointer; font-weight: 900; }
+  details.extra .stack { margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+
+  /* részletek panel */
+  .scrim { position: fixed; inset: 0; background: rgba(15,35,33,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10; }
+  .panel { position: fixed; top: 0; right: 0; height: 100%; width: min(640px, 100%); background: #fff; z-index: 11; transform: translateX(100%); transition: transform .25s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; }
+  body.open .scrim { opacity: 1; pointer-events: auto; }
+  body.open .panel { transform: none; }
+  .panel-head { padding: 16px 20px 12px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 90px 1fr auto; gap: 14px; align-items: start; }
+  .panel-head .thumb { width: 90px; }
+  .panel-head > div { min-width: 0; }
+  .panel-head .chip { white-space: normal; }
+  .panel-head h3 { margin: 0 0 6px; font-size: 20px; font-weight: 900; letter-spacing: -.02em; line-height: 1.15; }
+  .x { background: none; border: 0; font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; color: var(--muted); }
+  .panel-body { overflow-y: auto; padding: 16px 20px 40px; }
+  .panel-body h4 { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 22px 0 8px; }
+  .md { font-size: 14px; line-height: 1.55; }
+  .md h1, .md h2, .md h3 { font-weight: 900; letter-spacing: -.01em; margin: 18px 0 6px; line-height: 1.2; }
+  .md h1 { font-size: 19px; } .md h2 { font-size: 16px; background: var(--lime-soft); display: inline-block; padding: 1px 6px; } .md h3 { font-size: 15px; }
+  .md p { margin: 6px 0; } .md ul { margin: 6px 0; padding-left: 20px; }
+  .md li.task { list-style: none; margin-left: -20px; }
+  .md code { font: 12px var(--mono); background: #eef1ec; padding: 1px 4px; border-radius: 3px; }
+  .md pre { white-space: pre-wrap; font: 12px/1.5 var(--mono); background: #f3f5f1; padding: 10px; border-radius: 8px; }
+  table.meta { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.meta td { border-top: 1px solid var(--line); padding: 5px 6px; vertical-align: top; overflow-wrap: anywhere; }
+  table.meta td:first-child { font: 500 11px var(--mono); color: var(--muted); width: 120px; text-transform: uppercase; }
+  table.meta pre { margin: 0; white-space: pre-wrap; font: 12px var(--mono); }
+
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(80px); background: var(--petrol); color: #fff; padding: 10px 16px; border-radius: 10px; z-index: 20; transition: transform .25s; max-width: calc(100% - 32px); }
+  .toast.show { transform: translateX(-50%); }
+  .toast.err { background: var(--danger); }
+  .empty { color: var(--muted); font-size: 13px; padding: 6px 2px; }
+
+  @media (min-width: 761px) {
+    .board .col { max-height: calc(100vh - 170px); display: flex; flex-direction: column; }
+    .board .col .stack { overflow-y: auto; min-height: 0; padding-right: 2px; }
+  }
+  @media (max-width: 760px) {
+    header { padding: 12px 16px; position: static; }
+    main { padding: 12px 16px 40px; }
+    .goal { margin-left: 0; width: 100%; }
+    .counts { margin-left: 0; }
+    .board { grid-auto-flow: row; grid-auto-columns: auto; overflow: visible; }
+    .panel-head { grid-template-columns: 64px 1fr auto; padding: 14px 16px 10px; }
+    .panel-head .thumb { width: 64px; }
+    .panel-body { padding: 12px 16px 40px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>tartalom<span>gyár</span></h1>
+    <a href="/social" style="color:#a3e635;font-weight:700;text-decoration:none;border:1px solid #a3e635;border-radius:999px;padding:3px 12px">Social naptár és vödrök →</a>
+    <div class="goal" title="Ebben a hónapban posztolva (posted dátum alapján)">
+      <span class="mono" style="color:#a6c0c0">havi cél</span>
+      <div class="goal-bar"><i id="goalbar" style="width:0"></i></div>
+      <b id="goaltxt">0/90</b>
+    </div>
+  </div>
+  <div class="filters">
+    <input id="q" type="search" placeholder="Keresés (cím, id)…" autocomplete="off">
+    <select id="fcat"><option value="">Minden kategória</option></select>
+    <select id="fser"><option value="">Minden sorozat</option></select>
+    <div class="counts" id="counts"></div>
+  </div>
+</header>
+<main>
+  <div class="board" id="board"></div>
+  <details class="extra" id="d-elakadt"><summary>Elakadt (<span>0</span>)</summary><div class="stack"></div></details>
+  <details class="extra" id="d-kuka"><summary>Kuka (<span>0</span>)</summary><div class="stack"></div></details>
+</main>
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" aria-hidden="true">
+  <div class="panel-head" id="phead"></div>
+  <div class="panel-body" id="pbody"></div>
+</aside>
+<div class="toast" id="toast"></div>
+
+<script>
+const COLS = [
+  { key: "otlet", name: "Ötletdoboz", hint: "otletek/INBOX.md + ötletfájlok" },
+  { key: "szoveg", name: "Szöveg kész", hint: "jóváhagyásra vár (concept_ready)", human: true },
+  { key: "gyartas", name: "Gyártásban", hint: "approved · in_production · felvételre vár" },
+  { key: "kesz", name: "Kész", hint: "ready_to_post, még nincs átnézve", human: true },
+  { key: "atnezve", name: "Átnézve", hint: "rendben van, mehet renderre", human: true },
+  { key: "renderelve", name: "Renderelve", hint: "kész fájl, mehet posztolni", human: true },
+  { key: "posztolva", name: "Posztolva", hint: "posted · measured", done: true },
+];
+const STATUS_HU = { idea: "ötlet", researching: "kutatás", concept_ready: "jóváhagyásra vár", approved: "jóváhagyva", awaiting_footage: "felvételre vár", in_production: "gyártásban", ready_to_post: "kész", posted: "posztolva", measured: "mérve", failed: "elakadt", rejected: "kuka" };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+let DATA = null, current = null;
+const UI = (() => { try { return JSON.parse(localStorage.getItem("dash-ui") || "{}"); } catch { return {}; } })();
+const saveUI = () => { try { localStorage.setItem("dash-ui", JSON.stringify(UI)); } catch {} };
+
+function fmtDur(s) { if (!s) return ""; const m = Math.floor(s / 60), r = Math.round(s % 60); return m ? `${m}:${String(r).padStart(2, "0")}` : `${r} mp`; }
+function shortSeries(s) { return s; }
+function initials(v) { return (v.kategoria || v.title || "?").slice(0, 2).toUpperCase(); }
+function catColor(c) { return ({ VIRAL: "#a3e635", SOROZAT: "#0f766e", UGYFELSIKER: "#e8833a", HIR: "#3b82f6", OKTATO: "#8b5cf6" })[c] || "#22383a"; }
+
+function thumbHtml(v) {
+  const ph = `<span style="color:${v.kategoria === "VIRAL" ? "#0f2321" : "#fff"}">${esc(initials(v))}</span>`;
+  const bg = `background:${catColor(v.kategoria)}`;
+  if (!v.hasThumb) return `<div class="thumb" style="${bg}">${ph}</div>`;
+  return `<div class="thumb" style="${bg}"><img loading="lazy" alt="" src="/thumb/${encodeURIComponent(v.id)}?v=${encodeURIComponent(DATA.version.split(":")[0])}" onerror="this.remove()"></div>`;
+}
+function toggles(v) {
+  if (!["kesz", "atnezve", "renderelve", "posztolva"].includes(v.column)) return "";
+  const posted = v.column === "posztolva";
+  return `<div class="acts">
+    <button class="tg ${v.reviewed ? "on" : ""}" data-act="reviewed" data-id="${esc(v.id)}" title="${v.reviewed ? "Átnézve: " + esc(v.reviewed) + " (kattintás: visszavonás)" : "Megnéztem, rendben van"}">Átnézve</button>
+    <button class="tg ${v.rendered ? "on" : ""}" data-act="rendered" data-id="${esc(v.id)}" title="${v.rendered ? "Renderelve: " + esc(v.rendered) + " (kattintás: visszavonás)" : "A végső fájl kész"}">Renderelve</button>
+    <button class="tg ${posted ? "on" : ""}" data-act="posted" data-id="${esc(v.id)}" title="${posted ? "Posztolva: " + esc(v.posted) + " (kattintás: visszavonás)" : "Kint van"}">Posztolva</button>
+  </div>`;
+}
+function cardHtml(v) {
+  const chips = [
+    v.kategoria && `<span class="chip cat ${esc(v.kategoria)}">${esc(v.kategoria)}</span>`,
+    v.sorozat && `<span class="chip" title="${esc(v.sorozat)}">${esc(shortSeries(v.sorozat))}</span>`,
+    v.szint && `<span class="chip">${esc(v.szint)}</span>`,
+    v.status === "awaiting_footage" && `<span class="chip warn">felvételre vár</span>`,
+    v.column === "gyartas" && v.status !== "awaiting_footage" && `<span class="chip warn">${esc(STATUS_HU[v.status] || v.status)}${v.stage ? " · " + esc(v.stage) : ""}</span>`,
+  ].filter(Boolean).join("");
+  const sub = [v.duration && fmtDur(v.duration), v.column === "posztolva" && v.posted ? "posztolva " + v.posted : v.date].filter(Boolean).join(" · ");
+  return `<div class="card" data-id="${esc(v.id)}">
+    ${thumbHtml(v)}
+    <div><p class="t">${esc(v.title)}</p><div class="chips">${chips}</div><div class="sub">${esc(sub)}</div></div>
+    ${toggles(v)}
+  </div>`;
+}
+function ideaHtml(i) {
+  return `<div class="idea" data-idea="${esc(i.key)}"><div class="t">${esc(i.title)}</div>
+    <div class="sub">${[i.kategoria && `<span class="chip">${esc(i.kategoria)}</span>`, esc(i.date), i.file ? "📄 " + esc(i.file) : "INBOX"].filter(Boolean).join(" · ")}</div></div>`;
+}
+
+function matches(v, q, cat, ser) {
+  if (cat && v.kategoria !== cat) return false;
+  if (ser && v.sorozat !== ser) return false;
+  if (q && !(v.title + " " + v.id + " " + (v.sorozat || "")).toLowerCase().includes(q)) return false;
+  return true;
+}
+function fillSelect(sel, values, label) {
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${label}</option>` + values.map((v) => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+  sel.value = values.includes(cur) ? cur : "";
+}
+
+function render() {
+  if (!DATA) return;
+  const q = $("#q").value.trim().toLowerCase(), cat = $("#fcat").value, ser = $("#fser").value;
+  const vids = DATA.videos.filter((v) => matches(v, q, cat, ser)).sort((a, b) => (b.date + b.id).localeCompare(a.date + a.id));
+  const ideas = DATA.ideas.filter((i) => (!q || (i.title + " " + i.text).toLowerCase().includes(q)) && (!cat || (i.kategoria || "").toUpperCase().includes(cat)) && !ser);
+  const by = Object.groupBy(vids, (v) => v.column);
+  $("#board").innerHTML = COLS.map((c) => {
+    const items = by[c.key] || [];
+    const isIdeas = c.key === "otlet";
+    const n = items.length + (isIdeas ? ideas.length : 0);
+    return `<section class="col ${c.human ? "human" : ""} ${c.done ? "done" : ""}">
+      <h2>${esc(c.name)}<span class="n">${n}</span></h2><div class="hint">${esc(c.hint)}</div>
+      ${isIdeas ? `<form class="newidea" id="ideaform"><input id="ideatxt" maxlength="400" placeholder="Új ötlet egy sorban…"><button class="btn lime" type="submit">+</button></form>` : ""}
+      <div class="stack">${items.map(cardHtml).join("")}${isIdeas ? ideas.map(ideaHtml).join("") : ""}${n ? "" : `<div class="empty">Üres</div>`}</div>
+    </section>`;
+  }).join("");
+  for (const k of ["elakadt", "kuka"]) {
+    const d = $("#d-" + k), items = by[k] || [];
+    d.querySelector("span").textContent = items.length;
+    d.querySelector(".stack").innerHTML = items.map(cardHtml).join("") || `<div class="empty">Üres</div>`;
+    d.style.display = items.length || k === "elakadt" ? "" : "none";
+  }
+  const all = Object.groupBy(DATA.videos, (v) => v.column);
+  const cnt = (k) => (all[k] || []).length;
+  $("#counts").innerHTML = [
+    ["jóváhagyásra", cnt("szoveg")], ["gyártásban", cnt("gyartas")], ["átnézésre", cnt("kesz")],
+    ["renderre", cnt("atnezve")], ["posztolásra", cnt("renderelve")], ["posztolva", cnt("posztolva")], ["ötlet", DATA.ideas.length],
+  ].map(([l, n]) => `<span>${l} <b>${n}</b></span>`).join("");
+  $("#goaltxt").textContent = `${DATA.postedThisMonth}/${DATA.goal}`;
+  $("#goalbar").style.width = Math.min(100, (DATA.postedThisMonth / DATA.goal) * 100) + "%";
+  const form = $("#ideaform");
+  if (form) {
+    if (UI.ideaDraft) $("#ideatxt").value = UI.ideaDraft;
+    form.onsubmit = submitIdea;
+    $("#ideatxt").oninput = (e) => { UI.ideaDraft = e.target.value; saveUI(); };
+  }
+}
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : undefined);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+function toast(msg, err) {
+  const t = $("#toast"); t.textContent = msg; t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.className = "toast"), 2600);
+}
+function setData(d) {
+  const first = !DATA;
+  const changed = !DATA || DATA.version !== d.version;
+  DATA = d;
+  if (first) {
+    fillSelect($("#fcat"), [...new Set(d.videos.map((v) => v.kategoria).filter(Boolean))].sort(), "Minden kategória");
+    fillSelect($("#fser"), [...new Set(d.videos.map((v) => v.sorozat).filter(Boolean))].sort(), "Minden sorozat");
+    if (UI.cat) $("#fcat").value = UI.cat; if (UI.ser) $("#fser").value = UI.ser; if (UI.q) $("#q").value = UI.q;
+  }
+  if (changed && !document.activeElement?.matches?.("#ideatxt")) render();
+  if (changed && current?.type === "video") openVideo(current.id, true);
+}
+async function load() { try { setData(await api("/api/data")); } catch (e) { toast("Nem érem el a szervert: " + e.message, true); } }
+
+// ---------- gombok ----------
+async function toggle(btn) {
+  const { act, id } = btn.dataset, undo = btn.classList.contains("on");
+  if (undo && act === "posted" && !confirm("Visszavonod a posztolást? (status → ready_to_post)")) return;
+  document.querySelectorAll(`.tg[data-id="${CSS.escape(id)}"]`).forEach((b) => (b.disabled = true));
+  try {
+    setData(await api("/api/mark", { id, action: act, undo }));
+    toast(`${({ reviewed: "Átnézve", rendered: "Renderelve", posted: "Posztolva" })[act]}${undo ? ": visszavonva" : " ✓"}`);
+  } catch (e) { toast(e.message, true); render(); }
+}
+async function submitIdea(e) {
+  e.preventDefault();
+  const text = $("#ideatxt").value.trim();
+  if (!text) return;
+  try { UI.ideaDraft = ""; saveUI(); $("#ideatxt").value = ""; setData(await api("/api/idea", { text })); render(); toast("Ötlet beírva az INBOX.md végére"); }
+  catch (err) { toast(err.message, true); }
+}
+
+// ---------- részletek ----------
+function md(src) {
+  const out = []; let list = false, pre = false;
+  const inline = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/~~(.+?)~~/g, "<s>$1</s>").replace(/(^|[\s(])_(.+?)_(?=[\s).,]|$)/g, "$1<i>$2</i>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<u title="$2">$1</u>');
+  for (const line of src.split("\n")) {
+    if (/^```/.test(line)) { if (list) { out.push("</ul>"); list = false; } out.push(pre ? "</pre>" : "<pre>"); pre = !pre; continue; }
+    if (pre) { out.push(esc(line)); continue; }
+    const li = line.match(/^\s*[-*]\s+(\[( |x)\]\s+)?(.*)$/i) || line.match(/^\s*\d+\.\s+()()(.*)$/);
+    if (li) {
+      if (!list) { out.push("<ul>"); list = true; }
+      out.push(li[1] ? `<li class="task">${li[2].toLowerCase() === "x" ? "☑" : "☐"} ${inline(li[3])}</li>` : `<li>${inline(li[3])}</li>`);
+      continue;
+    }
+    if (list) { out.push("</ul>"); list = false; }
+    const h = line.match(/^(#{1,3})\s+(.*)$/);
+    if (h) out.push(`<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`);
+    else if (line.trim() === "---") out.push("<hr>");
+    else if (line.trim()) out.push(`<p>${inline(line)}</p>`);
+  }
+  if (list) out.push("</ul>"); if (pre) out.push("</pre>");
+  return out.join("\n");
+}
+function openPanel() { document.body.classList.add("open"); $("#panel").setAttribute("aria-hidden", "false"); }
+function closePanel() { document.body.classList.remove("open"); $("#panel").setAttribute("aria-hidden", "true"); current = null; }
+async function openVideo(id, refresh) {
+  current = { type: "video", id };
+  try {
+    const d = await api("/api/video?id=" + encodeURIComponent(id));
+    if (current?.id !== id) return;
+    const v = d.video, scroll = $("#pbody").scrollTop;
+    $("#phead").innerHTML = `${thumbHtml(v)}
+      <div><h3>${esc(v.title)}</h3>
+        <div class="chips">${[v.kategoria && `<span class="chip cat ${esc(v.kategoria)}">${esc(v.kategoria)}</span>`, v.sorozat && `<span class="chip">${esc(v.sorozat)}</span>`, v.szint && `<span class="chip">${esc(v.szint)}</span>`, `<span class="chip">${esc(STATUS_HU[v.status] || v.status)}</span>`, v.duration && `<span class="chip">${fmtDur(v.duration)}</span>`].filter(Boolean).join("")}</div>
+        <div class="sub mono" style="margin-top:6px;text-transform:none">content/${esc(v.id)}</div>
+        <div class="acts" style="margin-top:10px">${toggles(v).replace(/^<div class="acts">|<\/div>$/g, "")}
+          ${v.hasStudio ? `<button class="btn" id="studio">Megnyitás a Studióban</button>` : `<span class="sub">Nincs Studio-projekt (content/${esc(v.id)}/${esc(v.id)})</span>`}</div>
+      </div>
+      <button class="x" aria-label="Bezárás" onclick="closePanel()">×</button>`;
+    const metaRows = Object.entries(d.meta).map(([k, val]) => `<tr><td>${esc(k)}</td><td>${val.includes("\n") ? `<pre>${esc(val)}</pre>` : esc(val)}</td></tr>`).join("");
+    $("#pbody").innerHTML = `<h4>Poszt (post.md)</h4>${d.post ? `<div class="md">${md(d.post)}</div>` : `<div class="empty">Még nincs post.md</div>`}
+      <h4>meta.yaml</h4><table class="meta">${metaRows}</table>`;
+    if (refresh) $("#pbody").scrollTop = scroll;
+    const s = $("#studio");
+    if (s) s.onclick = async () => { s.disabled = true; try { await api("/api/studio", { id }); toast("Studio indul…"); } catch (e) { toast(e.message, true); } setTimeout(() => (s.disabled = false), 4000); };
+    if (!refresh) { $("#pbody").scrollTop = 0; openPanel(); }
+  } catch (e) { toast(e.message, true); }
+}
+async function openIdea(key) {
+  const i = DATA.ideas.find((x) => x.key === key); if (!i) return;
+  current = { type: "idea", key };
+  let body = i.text ? `<div class="md"><p>${md(i.text).replace(/^<p>|<\/p>$/g, "")}</p></div>` : "";
+  if (i.file) { try { const d = await api("/api/idea?file=" + encodeURIComponent(i.file)); body += `<h4>otletek/${esc(i.file)}</h4><div class="md">${md(d.text.replace(/^---\n[\s\S]*?\n---\n/, ""))}</div>`; } catch (e) { body += `<div class="empty">${esc(e.message)}</div>`; } }
+  $("#phead").innerHTML = `<div class="thumb" style="background:var(--lime);color:var(--petrol)">💡</div>
+    <div><h3>${esc(i.title)}</h3><div class="sub">${esc([i.kategoria, i.date, i.file ? "otletek/" + i.file : "otletek/INBOX.md"].filter(Boolean).join(" · "))}</div>
+    <div class="sub" style="margin-top:6px">Gyártásba vétel: a chatben, a koordinátor indít rá videó-munkamenetet.</div></div>
+    <button class="x" aria-label="Bezárás" onclick="closePanel()">×</button>`;
+  $("#pbody").innerHTML = `<h4>Ötlet</h4>${body}`;
+  $("#pbody").scrollTop = 0; openPanel();
+}
+
+// ---------- események ----------
+document.addEventListener("click", (e) => {
+  const tg = e.target.closest(".tg"); if (tg) { e.stopPropagation(); return toggle(tg); }
+  const card = e.target.closest(".card[data-id]"); if (card && !e.target.closest(".panel")) return openVideo(card.dataset.id);
+  const idea = e.target.closest(".idea[data-idea]"); if (idea) return openIdea(idea.dataset.idea);
+});
+$("#scrim").onclick = closePanel;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
+for (const [sel, k] of [["#q", "q"], ["#fcat", "cat"], ["#fser", "ser"]]) $(sel).addEventListener("input", (e) => { UI[k] = e.target.value; saveUI(); render(); });
+for (const k of ["elakadt", "kuka"]) { const d = $("#d-" + k); d.open = !!UI["open-" + k]; d.ontoggle = () => { UI["open-" + k] = d.open; saveUI(); }; }
+
+load();
+setInterval(() => { if (document.visibilityState === "visible") load(); }, 10000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") load(); });
+</script>
+</body>
+</html>

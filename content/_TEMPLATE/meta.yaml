@@ -1,0 +1,15 @@
+id: YYYY-MM-DD-slug
+title: ""
+status: idea              # lásd CLAUDE.md státusztábla
+stage: ""                 # in_production alatt: narrator|transcriber|editor|motion|captions|render|package
+kategoria: ""          # HIR | VIRAL | SOROZAT (CLAUDE.md, Kategória × szint)
+szint: ""              # LITE | MEDIUM | HIGH | MAX (alap: HIR→LITE, VIRAL→MEDIUM, SOROZAT→epizódonként; a végleges szintet a szint-javaslat után a felhasználó választja; LITE/MEDIUM végig 2D)
+format: faceless          # faceless | face
+pillar: ""                # brand/content-pillars.md
+visual_format: ""         # kinetic-text | screen-demo | list-countdown | before-after | talking-head-overlay
+created: ""
+approved: ""
+posted: ""
+links: {}                 # instagram: url, tiktok: url, youtube: url
+chosen_hook: A            # melyik hook-változat került a fő videóba
+notes: ""

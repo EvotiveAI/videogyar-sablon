@@ -1,0 +1,72 @@
+{
+  "_leiras": "A posztolási naptár. A /heti-terv tölti; a tools/social/naptar.mjs ebből készíti a docs/social-naptar.html-t és a .ics-eket, a dashboard Social nézete is ezt olvassa.",
+  "idopontok": {
+    "H": "07:30",
+    "L": "12:00",
+    "S": "19:30"
+  },
+  "szinek": {
+    "S": {
+      "nev": "megállít",
+      "hex": "#0C2825"
+    },
+    "L": {
+      "nev": "bizonyít",
+      "hex": "#A3E635"
+    },
+    "H": {
+      "nev": "tanít",
+      "hex": "#DDE8DC"
+    }
+  },
+  "allapotok": {
+    "kesz": "kész videó vagy anyag",
+    "gyar": "a gyár csinálja, felvétel nélkül",
+    "felvenni": "te veszed fel szombaton"
+  },
+  "tiktok_yt_extra": [],
+  "napok": [
+    {
+      "datum": "2026-01-05",
+      "posztok": [
+        {
+          "szin": "H",
+          "ido": "07:30",
+          "formatum": "karuszel",
+          "allapot": "gyar",
+          "cim": "Minta: 5 tipp karuszelben",
+          "hook": "",
+          "forras": "",
+          "kulcsszo": "",
+          "engedely": "",
+          "megjegyzes": "minta-sor, töröld"
+        },
+        {
+          "szin": "L",
+          "ido": "12:00",
+          "formatum": "video",
+          "allapot": "felvenni",
+          "cim": "Minta: ügyfél-eredmény",
+          "hook": "",
+          "forras": "",
+          "kulcsszo": "KULCSSZO",
+          "engedely": "kell",
+          "megjegyzes": ""
+        },
+        {
+          "szin": "S",
+          "ido": "19:30",
+          "formatum": "video",
+          "allapot": "gyar",
+          "cim": "Minta: sorozatrész",
+          "hook": "",
+          "forras": "",
+          "kulcsszo": "KULCSSZO",
+          "engedely": "",
+          "megjegyzes": ""
+        }
+      ],
+      "story": []
+    }
+  ]
+}

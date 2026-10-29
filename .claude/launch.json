@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tartalom-dashboard",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/dashboard/server.mjs"
+      ],
+      "port": 8770
+    },
+    {
+      "name": "social-naptar",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        ".preview/serve.mjs",
+        "docs",
+        "8771"
+      ],
+      "port": 8771
+    }
+  ]
+}

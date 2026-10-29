@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social · Tartalomgyár</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;700;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --petrol:#0f2321; --sz:#0C2825; --lime:#A3E635; --hz:#DDE8DC; --cetli:#F1E7CF;
+    --muted:#5d7473; --line:#dde4df; --bg:#f5f6f1; --card:#fff; --warn:#c2410c;
+    --sans:"Barlow",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--petrol);font:500 15px/1.35 var(--sans)}
+  header{background:var(--petrol);color:#fff;padding:14px 20px;position:sticky;top:0;z-index:5;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  header h1{margin:0;font-weight:900;font-size:26px;letter-spacing:-.03em;text-transform:lowercase}
+  header h1 span{background:var(--lime);color:var(--petrol);padding:0 6px}
+  header a{color:#a6c0c0;text-decoration:none;font-weight:700}
+  .tabs{display:flex;gap:6px;margin-left:auto}
+  .tabs button{background:none;border:1px solid #3c5554;color:#cfe0de;border-radius:999px;padding:4px 14px;font:700 14px var(--sans);cursor:pointer}
+  .tabs button.on{background:var(--lime);border-color:var(--lime);color:var(--petrol)}
+  main{padding:16px 20px 60px;max-width:1500px;margin:0 auto}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-bottom:12px}
+  .legend i{display:inline-block;width:13px;height:13px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+  .mono{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+  /* ütemterv */
+  .day{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .day.today{background:linear-gradient(90deg,#fff7ed,transparent 60%)}
+  .dl b{display:block;font-size:17px;font-weight:900}
+  .dl span{color:var(--muted);font-size:13px}
+  .posts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+  .card{border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-height:96px}
+  .card.S{background:var(--sz);color:#fff}.card.L{background:var(--lime)}.card.H{background:var(--hz)}
+  .card .top{display:flex;gap:8px;align-items:center}
+  .card .time{font-weight:900;font-size:16px}
+  .card .t{font-weight:700;line-height:1.2}
+  .card .src{font-size:12px;opacity:.75;word-break:break-word}
+  .pipe{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
+  .pipe span{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;border-radius:4px;padding:1px 5px;background:rgba(255,255,255,.55);color:var(--petrol);opacity:.55}
+  .card.S .pipe span{background:rgba(255,255,255,.18);color:#fff}
+  .pipe span.ok{opacity:1;background:#fff;color:var(--petrol);font-weight:700}
+  .pipe span.ok::before{content:"✓ "}
+  .pipe span.need{opacity:1;background:var(--warn);color:#fff}
+  .story{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .story b{color:var(--petrol)}
+  .warn{color:var(--warn);font-weight:700}.card.S .warn{color:#fdba74}
+  /* vödrök */
+  .buckets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+  @media (max-width:1100px){.buckets{grid-template-columns:1fr 1fr}}
+  @media (max-width:640px){.buckets{grid-template-columns:1fr}.day{grid-template-columns:1fr}}
+  .bucket{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .bh{padding:10px 12px}
+  .bh h2{margin:0;font-size:18px;font-weight:900}
+  .bh p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+  .bucket.S .bh{background:var(--sz);color:#fff}.bucket.L .bh{background:var(--lime)}.bucket.H .bh{background:var(--hz)}.bucket.T .bh{background:#e7e9e4}
+  .stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .stats span{font-size:12px;font-weight:700;background:rgba(255,255,255,.7);color:var(--petrol);border-radius:999px;padding:1px 8px}
+  .items{padding:8px;display:flex;flex-direction:column;gap:6px;max-height:70vh;overflow:auto}
+  .item{display:grid;grid-template-columns:44px 1fr;gap:8px;border:1px solid var(--line);border-radius:8px;padding:6px}
+  .item.off{opacity:.55}
+  .item img,.item .ph{width:44px;height:78px;object-fit:cover;border-radius:5px;background:#e7ece8}
+  .item .t{font-weight:700;font-size:13.5px;line-height:1.2}
+  .item .when{font-size:12px;color:var(--muted)}
+  .item .when b{color:var(--petrol)}
+  .item .pipe span{background:#eef2ee}
+  .item .pipe span.ok{background:var(--hz)}
+  .sec h3{font-size:12px;margin:8px 4px 2px;color:var(--muted)}
+  .hint{color:var(--muted);font-size:13.5px;max-width:900px}
+</style>
+</head>
+<body>
+<header>
+  <h1>tartalom<span>gyár</span></h1>
+  <a href="/">← gyártás</a>
+  <div class="tabs"><button data-v="terv" class="on">Ütemterv</button><button data-v="vodor">Vödrök</button></div>
+</header>
+<main>
+  <div class="legend">
+    <span><i style="background:var(--sz)"></i>megállít · 19:30</span>
+    <span><i style="background:var(--lime)"></i>bizonyít · 12:00</span>
+    <span><i style="background:var(--hz)"></i>tanít · 7:30</span>
+    <span class="mono">Folyamat: studio → render → firebase → ütemezve → kint</span>
+  </div>
+  <div id="view"></div>
+</main>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const NAP = ["V","H","K","Sze","Cs","P","Szo"];
+const FORMA = {video:"VIDEÓ",karuszel:"KARUSZEL",statikus:"STATIKUS"};
+const md = iso => { const d = new Date(iso+"T12:00:00"); return `${d.getMonth()+1}. ${String(d.getDate()).padStart(2,"0")}.`; };
+const nap = iso => NAP[new Date(iso+"T12:00:00").getDay()];
+let D = null, tab = "terv";
+
+function keyOf(datum, p){ return `${datum} ${p.ido} ${p.szin}`; }
+function pipeline(p, datum){
+  const st = (D.state[keyOf(datum,p)] || {});
+  const v = D.byId[p.forras];
+  const steps = [];
+  if (p.formatum === "video") {
+    if (v) {
+      steps.push(["studio", v.hasStudio || v.hasRender]);
+      steps.push(["render", v.hasRender]);
+    } else if ((p.forras||"").includes("referencia/")) {
+      steps.push(["9:16 keret", !!st.keret]);
+    }
+  } else {
+    steps.push(["elkészítve", !!st.kesz]);
+  }
+  steps.push(["firebase", !!st.firebase]);
+  steps.push(["ütemezve", !!st.utemezve]);
+  steps.push(["kint", !!st.kint]);
+  return steps;
+}
+function pipeHTML(steps){
+  const first = steps.findIndex(s => !s[1]);
+  return `<div class="pipe">${steps.map((s,i)=>`<span class="${s[1]?"ok":(i===first?"need":"")}">${esc(s[0])}</span>`).join("")}</div>`;
+}
+
+function renderTerv(){
+  const days = D.plan.napok || [];
+  let h = `<p class="hint">Mától ${days.length ? md(days.at(-1).datum) : ""}-ig. A narancs jelölés mutatja, mi a következő lépés posztonként. Forrás: <span class="mono">content/_social/naptar.json</span> (terv) és <span class="mono">allapot.json</span> (firebase, ütemezés, kint).</p>`;
+  for (const n of days) {
+    const posts = [...n.posztok].sort((a,b)=>a.ido.localeCompare(b.ido));
+    h += `<div class="day ${n.datum===D.today?"today":""}"><div class="dl"><b>${nap(n.datum)} ${md(n.datum)}</b><span>${n.datum===D.today?"ma":""}</span></div><div>
+      <div class="posts">${posts.map(p=>{
+        const v = D.byId[p.forras];
+        const meta = [p.kulcsszo && `komment: ${esc(p.kulcsszo)}`, p.engedely && `<span class="warn">⚠ ${esc(p.engedely)}</span>`, p.megjegyzes && esc(p.megjegyzes)].filter(Boolean).join(" · ");
+        return `<div class="card ${p.szin}"><div class="top"><span class="time">${esc(p.ido)}</span><span class="mono">${FORMA[p.formatum]||p.formatum}</span></div>
+          <div class="t">${esc(p.cim)}</div>
+          <div class="src">${esc(v ? v.title : (p.forras||""))}</div>
+          ${meta?`<div class="src">${meta}</div>`:""}
+          ${pipeHTML(pipeline(p,n.datum))}</div>`;}).join("")}</div>
+      ${(n.story||[]).length?`<div class="story"><b>Story:</b> ${n.story.map(s=>esc(s.cim)+(s.highlight?` → highlight: <b>${esc(s.highlight)}</b>`:"")+(s.engedely?` <span class="warn">⚠ ${esc(s.engedely)}</span>`:"")).join(" · ")}</div>`:""}
+    </div></div>`;
+  }
+  document.getElementById("view").innerHTML = h;
+  if (!window.__scrolled) { window.__scrolled = true; document.querySelector(".day.today")?.scrollIntoView({block:"start"}); }
+}
+
+function bucketOf(v){
+  if (v.status === "rejected" || v.status === "failed") return null;
+  if (/buy back/i.test(v.sorozat)) return "S";
+  if (/főnök/i.test(v.sorozat)) return "T";
+  if (v.kategoria === "UGYFELSIKER") return "L";
+  if (v.kategoria === "OKTATO") return "H";
+  return "T"; // VIRAL és arc nélküli
+}
+function renderVodor(){
+  const planned = {}; // forras -> [dátum]
+  for (const n of D.plan.napok||[]) for (const p of n.posztok) if (p.forras) (planned[p.forras] ||= []).push(n.datum);
+  for (const n of D.plan.napok||[]) for (const s of n.story||[]) if (s.forras) (planned[s.forras] ||= []).push(n.datum+" story");
+  const B = {
+    S:{nev:"Megállít",sub:"arcos sorozat, 19:30",items:[]},
+    L:{nev:"Bizonyít",sub:"ügyfélsiker, esettanulmány, szám, 12:00",items:[]},
+    H:{nev:"Tanít",sub:"karuszel, oktató, 7:30",items:[]},
+    T:{nev:"Csak TikTok + YouTube",sub:"főnök-sorozat, VIRAL (arc nélkül)",items:[]},
+  };
+  for (const v of D.videos) {
+    const b = bucketOf(v); if (!b) continue;
+    const kesz = v.status === "ready_to_post" || v.column === "posztolva";
+    B[b].items.push({kind:"video", id:v.id, t:v.title, thumb:v.hasThumb, when:planned[v.id], off:!kesz,
+      steps:[["studio",v.hasStudio||v.hasRender],["render",v.hasRender],["kint",v.column==="posztolva"]], status: kesz?"":v.status});
+  }
+  for (const f of D.refs) {
+    const src = "referencia/"+f;
+    B.L.items.push({kind:"ref", t:"Esettanulmány: "+f.replace(".mp4",""), when:planned[src], steps:[["16:9 kész",true],["9:16 keret",false]]});
+  }
+  for (const n of D.plan.napok||[]) for (const p of n.posztok) if (p.formatum !== "video" && B[p.szin]) {
+    const st = D.state[keyOf(n.datum,p)]||{};
+    B[p.szin].items.push({kind:"gyar", t:`${FORMA[p.formatum]}: ${p.cim}`, when:[n.datum], steps:[["elkészítve",!!st.kesz],["firebase",!!st.firebase]]});
+  }
+  let h = `<p class="hint">Minden, ami van, színenként. A betervezett elemeknél ott a dátum, a „nincs betervezve” elemek a következő hetekre maradnak. Halvány = még gyártásban.</p><div class="buckets">`;
+  for (const [k,b] of Object.entries(B)) {
+    const tervben = b.items.filter(i=>i.when).length, render = b.items.filter(i=>i.steps.find(s=>s[0]==="render")?.[1]).length;
+    const sorted = [...b.items].sort((a,c)=>((a.when?.[0]||"9")+a.t).localeCompare((c.when?.[0]||"9")+c.t));
+    h += `<section class="bucket ${k}"><div class="bh"><h2>${b.nev}</h2><p>${b.sub}</p>
+      <div class="stats"><span>${b.items.length} elem</span><span>${tervben} betervezve</span>${k!=="H"?`<span>${render} renderelve</span>`:""}</div></div>
+      <div class="items">${sorted.map(i=>`<div class="item ${i.off?"off":""}">
+        ${i.kind==="video"&&i.thumb?`<img loading="lazy" src="/thumb/${encodeURIComponent(i.id)}" alt="">`:`<div class="ph"></div>`}
+        <div><div class="t">${esc(i.t)}</div>
+        <div class="when">${i.when?`<b>${i.when.map(w=>md(w.slice(0,10))+(w.includes("story")?" story":"")).join(", ")}</b>`:"nincs betervezve"}${i.status?` · ${esc(i.status)}`:""}</div>
+        ${pipeHTML(i.steps)}</div></div>`).join("")}</div></section>`;
+  }
+  document.getElementById("view").innerHTML = h + "</div>";
+}
+
+async function load(){
+  const r = await fetch("/api/social"); D = await r.json();
+  D.byId = Object.fromEntries(D.videos.map(v=>[v.id,v]));
+  tab === "terv" ? renderTerv() : renderVodor();
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
+  tab = b.dataset.v; document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x===b)); load();
+}));
+load(); setInterval(()=>{ if (!document.hidden) load(); }, 15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+.env
+.DS_Store
+node_modules/
+
+# nagy médiafájlok – nem kellenek gitbe
+*.mp4
+*.mov
+*.m4a
+*.wav
+*.mp3
+inbox/raw/*
+!inbox/raw/.gitkeep
+content/*/raw/
+content/*/final/
+content/*/audio/
+content/*/composition/renders/
+.preview/
+
+# helyi Whisper-modellek (nagyok)
+tools/whisper/models/
+
+# Mixamo-animációk: használhatók, de nyersen nem terjeszthetők (nem kerülnek gitbe)
+video-templates/3d-clay-threejs/props/mixamo/*.fbx
+
+
+# tartalom-dashboard bélyegkép-gyorsítótár
+tools/dashboard/.cache/
+
+# saját tartalom (ha nem akarod verziózni)
+inbox/viral/*
